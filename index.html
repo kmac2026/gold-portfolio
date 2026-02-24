@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Gold Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-b: #E8C97A;
+  --gold-d: #6B5420;
+  --gold-bg: #1A1005;
+  --bg: #080808;
+  --card: #101010;
+  --border: #1E1E1E;
+  --border2: #2A2A2A;
+  --text: #EDE8DF;
+  --mid: #7A7060;
+  --dim: #3A3830;
+  --green: #52B87A;
+  --green-bg: #081A0E;
+  --red: #E06060;
+  --red-bg: #1A0808;
+  --blue: #5A9ECC;
+  --blue-bg: #080F18;
+  --orange: #D4885A;
+  --safe-t: env(safe-area-inset-top, 0px);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  min-height: 100dvh;
+  padding-bottom: calc(24px + var(--safe-b));
+  -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(ellipse 80% 40% at 50% -10%, rgba(201,168,76,.05) 0%, transparent 60%);
+}
+
+/* ── HEADER ── */
+.hdr {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,8,8,.97);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  padding: calc(14px + var(--safe-t)) 16px 14px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.hdr-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px; font-weight: 300; letter-spacing: .02em; line-height: 1;
+}
+.hdr-title em { color: var(--gold); font-style: italic; }
+.hdr-sub { font-size: 9px; letter-spacing: .18em; text-transform: uppercase; color: var(--dim); margin-top: 5px; }
+.hdr-right { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+
+.pill { display: flex; align-items: center; gap: 5px; font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); }
+.dot { width: 5px; height: 5px; border-radius: 50%; background: var(--dim); flex-shrink: 0; transition: background .3s; }
+.dot.live  { background: var(--green); box-shadow: 0 0 6px var(--green); animation: blink 2.5s infinite; }
+.dot.error { background: var(--red); }
+.dot.loading { background: var(--orange); animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+.btn {
+  background: var(--gold-bg); border: 1px solid var(--gold-d);
+  color: var(--gold); font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 400; letter-spacing: .12em; text-transform: uppercase;
+  padding: 8px 14px; cursor: pointer; border-radius: 3px;
+  transition: all .15s; min-height: 36px; touch-action: manipulation;
+}
+.btn:active { background: var(--gold-d); transform: scale(.97); }
+.btn:disabled { opacity: .4; pointer-events: none; }
+
+/* ── PAGE ── */
+.page { max-width: 520px; margin: 0 auto; padding: 16px 14px; }
+
+/* ── BANNERS ── */
+.banner { border-radius: 4px; padding: 13px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.7; display: none; }
+.banner.show { display: block; }
+.banner.error { background: var(--red-bg); border: 1px solid #3A1010; color: var(--red); }
+.banner.warn  { background: var(--gold-bg); border: 1px solid var(--gold-d); color: var(--gold); }
+.banner strong { font-weight: 500; }
+code { font-family: monospace; font-size: .88em; background: rgba(255,255,255,.06); padding: 1px 5px; border-radius: 3px; }
+
+/* ── LAST UPDATED ── */
+.last-updated {
+  font-size: 10px; color: var(--dim); text-align: center;
+  margin-bottom: 14px; letter-spacing: .05em;
+}
+.last-updated span { color: var(--mid); }
+
+/* ── TICKER ── */
+.ticker { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 14px; }
+.tick { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 13px 12px; }
+.tick-lbl { font-size: 8px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; line-height: 1.4; }
+.tick-val { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 400; color: var(--gold-b); line-height: 1; }
+.tick-val.dim { color: var(--dim); font-size: 13px; font-style: italic; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 4px; margin-bottom: 14px; overflow: hidden; position: relative;
+}
+.hero::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+.hero-top { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 16px 16px; gap: 12px; }
+.hero-lbl { font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: var(--dim); margin-bottom: 7px; }
+.hero-big {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(34px, 10vw, 48px); font-weight: 300; line-height: 1; letter-spacing: -.01em;
+  transition: color .4s;
+}
+.hero-big.dim { color: var(--dim); font-size: 22px; font-style: italic; }
+.hero-updated-lbl { font-size: 9px; color: var(--dim); margin-top: 6px; }
+.hero-right { text-align: right; flex-shrink: 0; }
+.hero-pl { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; line-height: 1; }
+.hero-pl.dim { color: var(--dim); font-style: italic; font-size: 16px; }
+.hero-roi { font-size: 10px; color: var(--dim); margin-top: 4px; }
+
+.hero-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border);
+}
+.hs { text-align: center; padding: 12px 4px; border-right: 1px solid var(--border); }
+.hs:last-child { border-right: none; }
+.hs-val { font-family: 'Cormorant Garamond', serif; font-size: 15px; line-height: 1; }
+.hs-lbl { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); margin-top: 4px; }
+
+/* ── HOLDING CARDS ── */
+.sec-lbl { font-size: 8px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); margin-bottom: 8px; padding-left: 2px; }
+.hcard { background: var(--card); border: 1px solid var(--border); border-radius: 4px; margin-bottom: 10px; overflow: hidden; }
+.hcard-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 14px 14px 12px; border-bottom: 1px solid var(--border); gap: 10px; }
+.hcard-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; line-height: 1; }
+.hcard-meta { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
+.hcard-qty { font-size: 10px; color: var(--mid); }
+.badge { font-size: 7px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; }
+.badge.physical { background: var(--gold-bg); color: var(--gold); border: 1px solid var(--gold-d); }
+.badge.etf { background: var(--blue-bg); color: var(--blue); border: 1px solid #182840; }
+.hcard-right { text-align: right; flex-shrink: 0; }
+.hcard-cur { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 400; line-height: 1; }
+.hcard-cur.dim { color: var(--dim); font-style: italic; font-size: 14px; }
+.hcard-cur-sub { font-size: 9px; color: var(--dim); margin-top: 3px; }
+.hcard-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.hcs { padding: 11px 14px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.hcs:nth-child(2n)       { border-right: none; }
+.hcs:nth-last-child(-n+2){ border-bottom: none; }
+.hcs-val { font-size: 13px; font-weight: 400; line-height: 1; margin-bottom: 3px; }
+.hcs-lbl { font-size: 8px; letter-spacing: .1em; text-transform: uppercase; color: var(--dim); }
+
+/* ── ALLOCATION ── */
+.alloc-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 16px 14px; margin-bottom: 14px; }
+.alloc-row { margin-bottom: 14px; }
+.alloc-row:last-child { margin-bottom: 0; }
+.alloc-top { display: flex; justify-content: space-between; margin-bottom: 7px; align-items: baseline; }
+.alloc-name { font-size: 12px; color: var(--text); }
+.alloc-right { display: flex; align-items: baseline; gap: 8px; }
+.alloc-pct { font-family: 'Cormorant Garamond', serif; font-size: 15px; color: var(--mid); }
+.alloc-val { font-size: 10px; color: var(--dim); }
+.track { height: 2px; background: var(--border2); border-radius: 2px; }
+.fill { height: 100%; border-radius: 2px; width: 0; transition: width 1.4s cubic-bezier(.16,1,.3,1); }
+.fill.gold-f { background: linear-gradient(90deg, var(--gold-d), var(--gold)); }
+.fill.etf-f  { background: linear-gradient(90deg, #182840, var(--blue)); }
+
+/* ── FOOTER ── */
+.footer { text-align: center; font-size: 9px; color: var(--dim); letter-spacing: .08em; padding-top: 16px; border-top: 1px solid var(--border); line-height: 2.2; }
+.footer a { color: var(--dim); text-decoration: none; }
+
+/* ── COLOURS ── */
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+
+/* ── SKELETON PULSE ── */
+@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:.7} }
+.skeleton { animation: pulse 1.5s infinite; }
+
+/* ── DESKTOP ── */
+@media(min-width: 580px){
+  .page { padding: 24px 20px; }
+  .ticker { grid-template-columns: repeat(4, 1fr); }
+  .hcard-grid { grid-template-columns: repeat(4, 1fr); }
+  .hcs { border-bottom: none !important; }
+  .hcs:nth-child(2n)  { border-right: 1px solid var(--border) !important; }
+  .hcs:nth-child(4n)  { border-right: none !important; }
+  .hero-big { font-size: 52px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div>
+    <div class="hdr-title">Gold <em>Portfolio</em></div>
+    <div class="hdr-sub">Live from Google Sheets · NZD</div>
+  </div>
+  <div class="hdr-right">
+    <div class="pill"><div class="dot loading" id="dot"></div><span id="stext">Loading…</span></div>
+    <button class="btn" id="rfbtn" onclick="loadAll()" disabled>↻ Refresh</button>
+  </div>
+</header>
+
+<main class="page">
+
+  <div class="banner error" id="b-error">
+    <strong id="b-err-title">Could not load data from Google Sheets.</strong><br>
+    <span id="b-err-body">Make sure the sheet is shared as <strong>Anyone with the link → Viewer</strong>, then tap Refresh. If opening this file locally, it will work once uploaded to GitHub Pages.</span>
+  </div>
+
+  <div class="banner warn" id="b-local">
+    <strong>Opening as a local file.</strong> The Google Sheets fetch will be blocked by your browser. Upload to GitHub Pages and it will work perfectly — your sheet is already set up correctly.
+  </div>
+
+  <div class="last-updated" id="last-updated">Fetching from Google Sheets…</div>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="tick"><div class="tick-lbl">Gold Spot · NZD/oz</div><div class="tick-val dim skeleton" id="t-gold">—</div></div>
+    <div class="tick"><div class="tick-lbl">GLDN.AX · NZD/share</div><div class="tick-val dim skeleton" id="t-gldn">—</div></div>
+    <div class="tick"><div class="tick-lbl">Total Invested</div><div class="tick-val dim skeleton" id="t-invested">—</div></div>
+    <div class="tick"><div class="tick-lbl">Portfolio ROI</div><div class="tick-val dim skeleton" id="t-roi">—</div></div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="hero-lbl">Current Portfolio Value</div>
+        <div class="hero-big dim skeleton" id="h-val">Loading…</div>
+        <div class="hero-updated-lbl" id="h-updated">—</div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-lbl">Total P&amp;L</div>
+        <div class="hero-pl dim skeleton" id="h-pl">—</div>
+        <div class="hero-roi" id="h-roi-pa">—</div>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-val skeleton" id="hs-invested">—</div><div class="hs-lbl">Invested</div></div>
+      <div class="hs"><div class="hs-val">43 oz</div><div class="hs-lbl">Physical oz</div></div>
+      <div class="hs"><div class="hs-val skeleton" id="hs-roi">—</div><div class="hs-lbl">Total ROI</div></div>
+      <div class="hs"><div class="hs-val skeleton" id="hs-roia">—</div><div class="hs-lbl">Ann. ROI</div></div>
+    </div>
+  </div>
+
+  <!-- HOLDINGS -->
+  <div class="sec-lbl">Holdings</div>
+  <div id="cards">
+    <!-- Skeleton placeholders -->
+    <div class="hcard" style="opacity:.4">
+      <div class="hcard-head">
+        <div><div class="hcard-name skeleton" style="width:140px;height:20px;background:var(--border);border-radius:3px">&nbsp;</div></div>
+        <div class="hcard-right"><div class="skeleton" style="width:90px;height:20px;background:var(--border);border-radius:3px">&nbsp;</div></div>
+      </div>
+      <div class="hcard-grid">
+        <div class="hcs"><div class="skeleton" style="height:13px;background:var(--border);border-radius:3px;margin-bottom:4px">&nbsp;</div></div>
+        <div class="hcs"><div class="skeleton" style="height:13px;background:var(--border);border-radius:3px;margin-bottom:4px">&nbsp;</div></div>
+        <div class="hcs"><div class="skeleton" style="height:13px;background:var(--border);border-radius:3px;margin-bottom:4px">&nbsp;</div></div>
+        <div class="hcs"><div class="skeleton" style="height:13px;background:var(--border);border-radius:3px;margin-bottom:4px">&nbsp;</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALLOCATION -->
+  <div class="sec-lbl" style="margin-top: 18px">Allocation by value</div>
+  <div class="alloc-card" id="alloc">
+    <div style="color:var(--dim);font-size:12px;font-style:italic">Loading…</div>
+  </div>
+
+  <div class="footer">
+    Data source: <a href="https://docs.google.com/spreadsheets/d/13ZwZzBkhliT-sqADCRadlVtgT0C-5tGa7fdkXrL830E" target="_blank">Your Google Sheet</a>
+    (prices calculated live in Sheets via GOOGLEFINANCE)<br>
+    Dashboard auto-refreshes every 5 minutes
+  </div>
+
+</main>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════
+const SHEET_ID = '13ZwZzBkhliT-sqADCRadlVtgT0C-5tGa7fdkXrL830E';
+
+// Sheet names must match exactly (case-sensitive)
+const SHEETS = {
+  portfolio: 'Portfolio',
+  prices:    'Asset Prices',
+  purchases: 'Purchases',
+};
+
+// Your holdings metadata (quantities/dates/cost don't change often)
+const HOLDINGS_META = [
+  { name:'Physical Gold', badge:'Physical', type:'physical', purchaseDate:'2024-04-29', qty:24,      qtyLabel:'24 oz',           costNZD:96960  },
+  { name:'Physical Gold', badge:'Physical', type:'physical', purchaseDate:'2025-02-05', qty:19,      qtyLabel:'19 oz',           costNZD:98382  },
+  { name:'GLDN (ASX)',    badge:'Gold ETF', type:'etf',      purchaseDate:'2025-10-21', qty:1315.96, qtyLabel:'1,315.96 shares', costNZD:79602  },
+];
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+const $    = id => document.getElementById(id);
+const nzd  = n  => new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD',maximumFractionDigits:0}).format(n);
+const nzd2 = n  => new Intl.NumberFormat('en-NZ',{style:'currency',currency:'NZD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+const pct    = n => (n>=0?'+':'')+(n*100).toFixed(2)+'%';   // for decimals e.g. 0.5879
+const pctRaw = n => (n>=0?'+':'')+(n).toFixed(2)+'%';       // for sheet values already e.g. 58.79
+const pct1 = n  => (n>=0?'+':'')+(n*100).toFixed(1)+'%';
+const sgn  = n  => n>=0?'+':'';
+const cc   = n  => n>=0?'pos':'neg';
+const days = d  => Math.max(0,Math.floor((Date.now()-new Date(d))/86400000));
+
+function setD(id,v,cls){ const e=$(id); if(!e)return; if(v!==undefined)e.textContent=v; if(cls!==undefined)e.className=cls; }
+function showBanner(id,show){ $(id).classList[show?'add':'remove']('show'); }
+function setStatus(state,msg){
+  $('dot').className='dot'+(state==='live'?' live':state==='error'?' error':state==='loading'?' loading':'');
+  setD('stext',msg);
+}
+
+// Parse a number from CSV cell (handles NZD formatting, %, etc.)
+function parseNum(s){
+  if(!s||s===''||s==='—'||s.toLowerCase()==='n/a') return null;
+  return parseFloat(String(s).replace(/[^0-9.\-]/g,''));
+}
+
+// ═══════════════════════════════════════════════
+// GOOGLE SHEETS CSV FETCH
+// Sheets exports any tab as CSV via this URL pattern
+// ═══════════════════════════════════════════════
+async function fetchSheet(sheetName){
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const r = await fetch(url, { signal: (() => { const c=new AbortController(); setTimeout(()=>c.abort(),12000); return c.signal; })() });
+  if(!r.ok) throw new Error(`Sheet "${sheetName}" returned HTTP ${r.status}`);
+  const text = await r.text();
+  if(text.includes('Login Required') || text.includes('Sign in')) throw new Error('Sheet is not public — set sharing to "Anyone with link → Viewer"');
+  return parseCSV(text);
+}
+
+// Minimal CSV parser (handles quoted commas)
+function parseCSV(text){
+  const rows = [];
+  const lines = text.trim().split('\n');
+  for(const line of lines){
+    const row = [];
+    let cur = '', inQ = false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){ inQ=!inQ; }
+      else if(ch===','&&!inQ){ row.push(cur.trim()); cur=''; }
+      else { cur+=ch; }
+    }
+    row.push(cur.trim());
+    rows.push(row);
+  }
+  return rows;
+}
+
+// ═══════════════════════════════════════════════
+// PARSE SHEETS DATA
+// ═══════════════════════════════════════════════
+function parsePortfolioSheet(rows){
+  // Row 0 = headers, Row 1 = values
+  // Cols: Initial Investment | Current Portfolio Value | Profit/Loss | Portfolio ROI | Annualised ROI
+  const vals = rows[1] || [];
+  return {
+    initialInvestment:  parseNum(vals[0]),
+    currentValue:       parseNum(vals[1]),
+    profitLoss:         parseNum(vals[2]),
+    roi:                parseNum(vals[3]),
+    annualisedRoi:      parseNum(vals[4]),
+  };
+}
+
+function parsePricesSheet(rows){
+  // Row 0 = headers (Asset | Current Market Prices)
+  // Row 1 = Gold | price
+  // Row 2 = GLDN | price
+  let goldNZD=null, gldnNZD=null;
+  for(let i=1;i<rows.length;i++){
+    const [asset,price] = rows[i];
+    const p = parseNum(price);
+    if(!asset||p===null) continue;
+    if(asset.toLowerCase().includes('gold') && !asset.toLowerCase().includes('gldn')) goldNZD = p;
+    if(asset.toLowerCase().includes('gldn')) gldnNZD = p;
+  }
+  return { goldNZD, gldnNZD };
+}
+
+function parsePurchasesSheet(rows){
+  // Row 0 = headers
+  // Cols: Purchase Date | Days Held | Type | Amount | Measure | Cost Basis | Current Value | P&L | ROI | ROI Per Annum
+  const purchases = [];
+  for(let i=1;i<rows.length;i++){
+    const r = rows[i];
+    if(!r[0]||r[0]==='') continue;
+    purchases.push({
+      purchaseDate: r[0],
+      daysHeld:     parseNum(r[1]),
+      type:         r[2],
+      amount:       parseNum(r[3]),
+      measure:      r[4],
+      costBasis:    parseNum(r[5]),
+      currentValue: parseNum(r[6]),
+      pl:           parseNum(r[7]),
+      roi:          parseNum(r[8]),
+      roiPA:        parseNum(r[9]),
+    });
+  }
+  return purchases;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function render(portfolio, prices, purchases){
+
+  // ── Ticker
+  setD('t-gold',     prices.goldNZD ? nzd2(prices.goldNZD)  : 'N/A', prices.goldNZD ? 'tick-val' : 'tick-val dim');
+  setD('t-gldn',     prices.gldnNZD ? nzd2(prices.gldnNZD)  : 'N/A', prices.gldnNZD ? 'tick-val' : 'tick-val dim');
+  setD('t-invested', portfolio.initialInvestment ? nzd(portfolio.initialInvestment) : '—', 'tick-val');
+  setD('t-roi',      portfolio.roi!=null ? pctRaw(portfolio.roi) : '—', 'tick-val '+(portfolio.roi>=0?'pos':'neg'));
+
+  // ── Hero
+  setD('h-val',  portfolio.currentValue ? nzd(portfolio.currentValue) : '—', 'hero-big');
+  if(portfolio.profitLoss!=null){
+    setD('h-pl', sgn(portfolio.profitLoss)+nzd(Math.abs(portfolio.profitLoss)), 'hero-pl '+cc(portfolio.profitLoss));
+  }
+  setD('h-roi-pa', portfolio.annualisedRoi!=null ? pctRaw(portfolio.annualisedRoi)+' annualised' : '—', 'hero-roi '+cc(portfolio.annualisedRoi));
+
+  setD('hs-invested', portfolio.initialInvestment ? nzd(portfolio.initialInvestment) : '—', 'hs-val');
+  setD('hs-roi',  portfolio.roi!=null ? pctRaw(portfolio.roi) : '—', 'hs-val '+cc(portfolio.roi));
+  setD('hs-roia', portfolio.annualisedRoi!=null ? pctRaw(portfolio.annualisedRoi) : '—', 'hs-val '+cc(portfolio.annualisedRoi));
+
+  const now = new Date();
+  setD('h-updated', 'Last updated '+now.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit'})+' · '+now.toLocaleDateString('en-NZ',{weekday:'short',day:'numeric',month:'short'}));
+
+  // ── Holdings cards — merge Purchases sheet data with metadata
+  const cards = HOLDINGS_META.map((meta, i) => {
+    const p = purchases[i] || {};
+    const hasValue = p.currentValue!=null && p.currentValue>0;
+    const hasPL    = p.pl!=null;
+    const dFmt = meta.purchaseDate ? new Date(meta.purchaseDate).toLocaleDateString('en-NZ',{day:'numeric',month:'short',year:'2-digit'}) : '—';
+    const daysHeldVal = p.daysHeld ?? days(meta.purchaseDate);
+
+    return `<div class="hcard">
+      <div class="hcard-head">
+        <div>
+          <div class="hcard-name">${meta.name}</div>
+          <div class="hcard-meta">
+            <span class="hcard-qty">${meta.qtyLabel}</span>
+            <span class="badge ${meta.type}">${meta.badge}</span>
+          </div>
+        </div>
+        <div class="hcard-right">
+          <div class="hcard-cur${hasValue?'':' dim'}">${hasValue ? nzd(p.currentValue) : 'N/A'}</div>
+          <div class="hcard-cur-sub">Current value</div>
+        </div>
+      </div>
+      <div class="hcard-grid">
+        <div class="hcs">
+          <div class="hcs-val">${p.costBasis ? nzd(p.costBasis) : nzd(meta.costNZD)}</div>
+          <div class="hcs-lbl">Cost Basis · ${dFmt}</div>
+        </div>
+        <div class="hcs ${hasPL?cc(p.pl):''}">
+          <div class="hcs-val">${hasPL ? sgn(p.pl)+nzd(Math.abs(p.pl)) : '—'}</div>
+          <div class="hcs-lbl">P&amp;L</div>
+        </div>
+        <div class="hcs ${p.roi!=null?cc(p.roi):''}">
+          <div class="hcs-val">${p.roi!=null ? pctRaw(p.roi) : '—'}</div>
+          <div class="hcs-lbl">Total ROI</div>
+        </div>
+        <div class="hcs ${p.roiPA!=null?cc(p.roiPA):''}">
+          <div class="hcs-val">${p.roiPA!=null ? pctRaw(p.roiPA) : '—'}</div>
+          <div class="hcs-lbl">ROI / yr · ${Math.round(daysHeldVal).toLocaleString()}d</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  $('cards').innerHTML = cards.join('');
+
+  // ── Allocation
+  const totalVal = portfolio.currentValue || 0;
+  if(totalVal > 0 && purchases.length > 0){
+    $('alloc').innerHTML = HOLDINGS_META.map((meta, i) => {
+      const cv = (purchases[i]||{}).currentValue || 0;
+      const p  = (cv / totalVal * 100);
+      const fillCls = meta.type==='etf' ? 'etf-f' : 'gold-f';
+      return `<div class="alloc-row">
+        <div class="alloc-top">
+          <span class="alloc-name">${meta.name} <span style="color:var(--dim);font-size:10px">· ${meta.qtyLabel}</span></span>
+          <div class="alloc-right">
+            <span class="alloc-val">${cv ? nzd(cv) : '—'}</span>
+            <span class="alloc-pct">${p.toFixed(1)}%</span>
+          </div>
+        </div>
+        <div class="track"><div class="fill ${fillCls}" data-w="${p}" style="width:0"></div></div>
+      </div>`;
+    }).join('');
+    setTimeout(()=>document.querySelectorAll('.fill').forEach(e=>e.style.width=e.dataset.w+'%'), 120);
+  }
+
+  // ── Last updated bar
+  setD('last-updated', '');
+  $('last-updated').innerHTML = `Sheet synced · <span>${now.toLocaleTimeString('en-NZ',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</span> · auto-refreshes every 5 min`;
+}
+
+// ═══════════════════════════════════════════════
+// MAIN
+// ═══════════════════════════════════════════════
+async function loadAll(){
+  const btn=$('rfbtn');
+  btn.disabled=true; btn.textContent='↻ Loading…';
+  showBanner('b-error',false);
+  setStatus('loading','Syncing…');
+
+  // Detect local file
+  if(location.protocol==='file:'){
+    showBanner('b-local',true);
+    setStatus('error','Local file');
+    btn.disabled=false; btn.textContent='↻ Refresh';
+    return;
+  }
+  showBanner('b-local',false);
+
+  try{
+    // Fetch all 3 sheets in parallel
+    const [portfolioRows, pricesRows, purchasesRows] = await Promise.all([
+      fetchSheet(SHEETS.portfolio),
+      fetchSheet(SHEETS.prices),
+      fetchSheet(SHEETS.purchases),
+    ]);
+
+    const portfolio = parsePortfolioSheet(portfolioRows);
+    const prices    = parsePricesSheet(pricesRows);
+    const purchases = parsePurchasesSheet(purchasesRows);
+
+    render(portfolio, prices, purchases);
+    setStatus('live','Live from Sheets');
+
+  }catch(err){
+    console.error('Sheets fetch error:', err);
+    showBanner('b-error',true);
+    setD('b-err-title','Could not load from Google Sheets.');
+    setD('b-err-body', err.message.includes('not public')
+      ? 'Your sheet is not shared publicly. Go to Share → Anyone with the link → Viewer, then tap Refresh.'
+      : `Error: ${err.message}. Make sure the sheet is shared publicly and try again.`
+    );
+    setStatus('error','Load failed');
+  }finally{
+    btn.disabled=false; btn.textContent='↻ Refresh';
+  }
+}
+
+// Initial load + auto-refresh every 5 minutes
+loadAll();
+setInterval(loadAll, 300000);
+</script>
+
+</body>
+</html>
